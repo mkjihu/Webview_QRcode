@@ -1,0 +1,27 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width; user-scalable=0;" />
+<title>JavascriptInterface交互</title>
+</head>
+<body>
+<h1>我是網頁</h1>
+
+<input type="button" value="啟用QRCode掃描" onClick="openqr()" />
+
+<p id="mytext">以下返回內容：</p>
+
+<script language="javascript">
+    function openqr() {
+    	AndroidFunction.openqr();
+    }
+    
+    function callFromActivity(msg){
+ 		//document.getElementById("mytext").innerHTML = msg;
+ 		
+    }
+</script>
+
+</body>
+</html>
