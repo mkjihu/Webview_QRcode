@@ -2,6 +2,7 @@ package com.example.webview_qrcode;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 	
 	public final int REQUEST_CODE_ASK_CALL_PHONEk=1;
 	private final int OK_CAMERA = 11;
-	
+	private final static int SCANNIN_GREQUEST_CODE = 1;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +79,25 @@ public class MainActivity extends AppCompatActivity {
 	
 	
 	
-	
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) 
+	{
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch (requestCode) {
+		case SCANNIN_GREQUEST_CODE:
+			if(resultCode == RESULT_OK){
+				Bundle bundle = data.getExtras();//bundle.getString("result")
+				String dfg = bundle.getString("result");
+				Log.i("回傳", dfg);
+				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");	
+			}
+			break;
+		}
+		
+		
+	}
 	
 	//相機權限同意返回
 	@Override
@@ -110,7 +129,11 @@ public class MainActivity extends AppCompatActivity {
 	//在js中调用window.AndroidFunction.openqr()，便会触发此方法。  
     @JavascriptInterface  
     public void openqr() {  
+    	Log.i("測試", "測試");
     	
+    	Intent intent = new Intent(MainActivity.this, MipcaActivityCapture.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivityForResult(intent, SCANNIN_GREQUEST_CODE);
     }  
 	
 	
