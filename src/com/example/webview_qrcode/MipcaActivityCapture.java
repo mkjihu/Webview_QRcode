@@ -262,6 +262,7 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		inactivityTimer.onActivity();
 		playBeepSoundAndVibrate();
 		String resultString = result.getText();
+		Log.i("掃描結果", result.getText());
 		onResultHandler(resultString, barcode);
 	}
 	
@@ -278,6 +279,8 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		Intent resultIntent = new Intent();
 		Bundle bundle = new Bundle();
 		bundle.putString("result", resultString);
+		//Log.i("有图", bitmap.getWidth()+","+bitmap.getHeight()); 
+		MyApplication.getInstance().bitmap = bitmap;
 		//bundle.putParcelable("bitmap", bitmap);//---圖片不用傳
 		resultIntent.putExtras(bundle);
 		this.setResult(RESULT_OK, resultIntent);

@@ -27,7 +27,7 @@ final class PreviewCallback implements Camera.PreviewCallback {
   private static final String TAG = PreviewCallback.class.getSimpleName();
 
   private final CameraConfigurationManager configManager;
-  private final boolean useOneShotPreviewCallback;
+  private final boolean useOneShotPreviewCallback;//使用一次预览回调
   private Handler previewHandler;
   private int previewMessage;
 
@@ -40,15 +40,19 @@ final class PreviewCallback implements Camera.PreviewCallback {
     this.previewHandler = previewHandler;
     this.previewMessage = previewMessage;
   }
-
+  
+  //自動對焦後輸出圖片
   public void onPreviewFrame(byte[] data, Camera camera) {
-    Point cameraResolution = configManager.getCameraResolution();
-    if (!useOneShotPreviewCallback) {
+	//获取到每个帧数据data  
+    Point cameraResolution = configManager.getCameraResolution();//获得相机分辨率
+    if (!useOneShotPreviewCallback) {//使用一次预览回调
+    	Log.i("使用一次预览回调", "使用一次预览回调");
       camera.setPreviewCallback(null);
     }
     if (previewHandler != null) {
-      Message message = previewHandler.obtainMessage(previewMessage, cameraResolution.x,
-          cameraResolution.y, data);
+    	
+    	Log.i("获得扫描资料", "获得扫描资料");
+      Message message = previewHandler.obtainMessage(previewMessage, cameraResolution.x,cameraResolution.y, data);
       message.sendToTarget();
       previewHandler = null;
     } else {

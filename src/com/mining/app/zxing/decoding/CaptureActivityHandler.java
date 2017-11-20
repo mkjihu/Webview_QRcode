@@ -65,6 +65,7 @@ public final class CaptureActivityHandler extends Handler {
 
   @Override
   public void handleMessage(Message message) {
+	  Log.i("解碼解果", message.what+"");
     switch (message.what) {
       case R.id.auto_focus:
         //Log.d(TAG, "Got auto-focus message");
@@ -78,19 +79,18 @@ public final class CaptureActivityHandler extends Handler {
         Log.d(TAG, "Got restart preview message");
         restartPreviewAndDecode();
         break;
-      case R.id.decode_succeeded:
+      case R.id.decode_succeeded://解码成功
         Log.d(TAG, "Got decode succeeded message");
         state = State.SUCCESS;
         Bundle bundle = message.getData();
         
         /***********************************************************************/
-        Bitmap barcode = bundle == null ? null :
-            (Bitmap) bundle.getParcelable(DecodeThread.BARCODE_BITMAP);//���ñ����߳�
+        Bitmap barcode = bundle == null ? null : (Bitmap) bundle.getParcelable(DecodeThread.BARCODE_BITMAP);//���ñ����߳�
         
         activity.handleDecode((Result) message.obj, barcode);//���ؽ��?        /***********************************************************************/
         break;
       case R.id.decode_failed:
-        // We're decoding as fast as possible, so when one decode fails, start another.
+        // 我们正在尽可能快的解码，所以当一个解码失败，开始另一个。
         state = State.PREVIEW;
         CameraManager.get().requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
         break;

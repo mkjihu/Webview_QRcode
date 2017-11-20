@@ -18,6 +18,8 @@ package com.mining.app.zxing.decoding;
 
 import java.util.Hashtable;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,6 +27,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.webview_qrcode.MipcaActivityCapture;
+import com.example.webview_qrcode.MyApplication;
 import com.example.webview_qrcode.R;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -53,7 +56,7 @@ final class DecodeHandler extends Handler {
 	public void handleMessage(Message message) {
 		switch (message.what) {
 		case R.id.decode:
-			// Log.d(TAG, "Got decode message");
+			Log.i("得到解码消息", "Got decode message");
 			decode((byte[]) message.obj, message.arg1, message.arg2);
 			break;
 		case R.id.quit:
@@ -69,16 +72,21 @@ final class DecodeHandler extends Handler {
 	 * 
 	 * @param data
 	 *            The YUV preview frame.
-	 * @param width
+	 * @param width *预览框的宽度。
 	 *            The width of the preview frame.
-	 * @param height
+	 * @param height 预览框架的高度。
 	 *            The height of the preview frame.
 	 */
+	//-解码取景器矩形内的数据
 	private void decode(byte[] data, int width, int height) {
+		
+		Log.i("解码开始", "预览框的宽度"+width);
+		Log.i("解码开始", "预览框的高度"+height);
+		
 		long start = System.currentTimeMillis();
 		Result rawResult = null;
 
-		// modify here
+		// modify here 在這裡修改
 		byte[] rotatedData = new byte[data.length];
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++)
@@ -87,10 +95,15 @@ final class DecodeHandler extends Handler {
 		int tmp = width; // Here we are swapping, that's the difference to #11
 		width = height;
 		height = tmp;
-
-		PlanarYUVLuminanceSource source = CameraManager.get()
-				.buildLuminanceSource(rotatedData, width, height);
+		Log.i("解码开始2", "预览框的宽度"+height);
+		Log.i("解码开始2", "预览框的高度"+height);
+		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
 		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+		
+		Bitmap bitmap1 = BitmapFactory.decodeByteArray(rotatedData, 0, rotatedData.length);
+    	Log.i("圖片高寬", bitmap1.getHeight()+","+bitmap1.getWidth());
+		//-此处截图测试
+		MyApplication.getInstance().bitmap2 = bitmap1;
 		try {
 			rawResult = multiFormatReader.decodeWithState(bitmap);
 		} catch (ReaderException re) {
@@ -101,19 +114,15 @@ final class DecodeHandler extends Handler {
 
 		if (rawResult != null) {
 			long end = System.currentTimeMillis();
-			Log.d(TAG, "Found barcode (" + (end - start) + " ms):\n"
-					+ rawResult.toString());
-			Message message = Message.obtain(activity.getHandler(),
-					R.id.decode_succeeded, rawResult);
+			Log.i("找到条形码", "Found barcode (" + (end - start) + " ms):\n"+ rawResult.toString());
+			Message message = Message.obtain(activity.getHandler(),R.id.decode_succeeded, rawResult);
 			Bundle bundle = new Bundle();
-			bundle.putParcelable(DecodeThread.BARCODE_BITMAP,
-					source.renderCroppedGreyscaleBitmap());
+			bundle.putParcelable(DecodeThread.BARCODE_BITMAP,source.renderCroppedGreyscaleBitmap());
 			message.setData(bundle);
 			// Log.d(TAG, "Sending decode succeeded message...");
 			message.sendToTarget();
 		} else {
-			Message message = Message.obtain(activity.getHandler(),
-					R.id.decode_failed);
+			Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
 			message.sendToTarget();
 		}
 	}

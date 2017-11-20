@@ -30,7 +30,7 @@ import com.google.zxing.ResultPointCallback;
 
 /**
  * This thread does all the heavy lifting of decoding the images.
- * �����߳�
+ * 这个线程完成了所有解码图像的繁重工作。
  */
 final class DecodeThread extends Thread {
 
@@ -68,7 +68,7 @@ final class DecodeThread extends Thread {
 
   Handler getHandler() {
     try {
-      handlerInitLatch.await();
+      handlerInitLatch.await(); //等待
     } catch (InterruptedException ie) {
       // continue?
     }

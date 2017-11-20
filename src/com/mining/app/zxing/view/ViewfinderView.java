@@ -219,7 +219,7 @@ public final class ViewfinderView extends View {
             canvas.drawBitmap(((BitmapDrawable)(ContextCompat.getDrawable(getContext(), R.drawable.qrcode_scan_line))).getBitmap(), null, lineRect, paint); //--修修改支援API22 
    
             
-            Log.i("讀取點", "讀取點");
+            //Log.i("讀取點", "讀取點");
             
         	//画扫描框下面的字
             paint.setColor(Color.WHITE);    

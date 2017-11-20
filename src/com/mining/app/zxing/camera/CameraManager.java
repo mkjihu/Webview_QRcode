@@ -201,7 +201,7 @@ public final class CameraManager {
   }
 
   /**
-   * Asks the camera hardware to perform an autofocus.
+   * Asks the camera hardware to perform an autofocus.要求相机硬件执行自动对焦。
    *
    * @param handler The Handler to notify when the autofocus completes.
    * @param message The message to deliver.
@@ -346,7 +346,7 @@ public final class CameraManager {
 	public void setCameraDisplayOrientation(Context context, Camera mCamera) {
 	    Camera.CameraInfo info =
 	            new Camera.CameraInfo();
-	    Camera.getCameraInfo(0, info); // Use the first rear-facing camera
+	    Camera.getCameraInfo(0, info); // 使用第一个后置摄像头
 	    int rotation = getDeviceCurrentOrientation(context);
 
 	    int degrees = 0;

@@ -1,5 +1,7 @@
 package com.example.webview_qrcode;
 
+import com.androidquery.AQuery;
+
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
@@ -26,12 +28,14 @@ public class MainActivity extends AppCompatActivity {
 	private final int OK_CAMERA = 11;
 	private final static int SCANNIN_GREQUEST_CODE = 1;
 	
+	public AQuery aq;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		fid();
-		
+		aq = new AQuery(this);
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
 				||ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 			//申请WRITE_EXTERNAL_STORAGE权限
@@ -91,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
 				Bundle bundle = data.getExtras();//bundle.getString("result")
 				String dfg = bundle.getString("result");
 				Log.i("回傳", dfg);
-				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");	
+				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
+				Bitmap bitmap = MyApplication.getInstance().bitmap2;
+				aq.id(R.id.imageView1).image(bitmap);
 			}
 			break;
 		}
