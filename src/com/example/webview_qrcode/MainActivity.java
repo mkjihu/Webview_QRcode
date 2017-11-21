@@ -12,18 +12,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
 	public WebView webView;
-	
+	public ImageView imageView1;
 	public final int REQUEST_CODE_ASK_CALL_PHONEk=1;
 	private final int OK_CAMERA = 11;
 	private final static int SCANNIN_GREQUEST_CODE = 1;
@@ -34,8 +35,9 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		fid();
 		aq = new AQuery(this);
+		fid();
+		
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
 				||ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 			//申请WRITE_EXTERNAL_STORAGE权限
@@ -48,8 +50,17 @@ public class MainActivity extends AppCompatActivity {
 
 		}
 		
-		
-		
+		aq.id(R.id.imageView1).clicked(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				Bitmap bitmap = MyApplication.getInstance().bitmap2;
+				if (bitmap !=null) {
+					aq.id(imageView1).image(bitmap);
+				}
+				
+			}
+		});
 		
 		
 	}
@@ -74,10 +85,7 @@ public class MainActivity extends AppCompatActivity {
 		});
 		webView.setWebChromeClient(new WebChromeClient());
 		webView.loadUrl("file:///android_asset/text.html");//webView.loadUrl("file:///android_asset/text.html");
-		
 		webView.addJavascriptInterface(MainActivity.this , "AndroidFunction");//-註冊一個AndroidFunction 方法
-		
-		
 		
 	}
 	
@@ -97,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 				Log.i("回傳", dfg);
 				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
 				Bitmap bitmap = MyApplication.getInstance().bitmap2;
-				aq.id(R.id.imageView1).image(bitmap);
+				aq.id(imageView1).image(bitmap);
 			}
 			break;
 		}

@@ -18,15 +18,17 @@ package com.mining.app.zxing.view;
 
 import java.util.Collection;
 import java.util.HashSet;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.Paint.Style;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
@@ -142,6 +144,7 @@ public final class ViewfinderView extends View {
 		possibleResultPoints = new HashSet<ResultPoint>(5);
 	}
 
+	@SuppressLint("DrawAllocation")
 	@Override
 	public void onDraw(Canvas canvas) {
 		//中间的扫描框，你要修改扫描框的大小，去CameraManager里面修改
@@ -168,8 +171,7 @@ public final class ViewfinderView extends View {
 		//扫描框的左边面到屏幕左边，扫描框的右边到屏幕右边
 		canvas.drawRect(0, 0, width, frame.top, paint);
 		canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
-		canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1,
-				paint);
+		canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1,paint);
 		canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 		
 		
@@ -184,26 +186,37 @@ public final class ViewfinderView extends View {
 			paint.setColor(Color.GREEN);//--設定顏色
 			//int myColor = context.getResources().getColor(R.color.aabswet);
 			//paint.setColor(myColor);
-			canvas.drawRect(frame.left, frame.top, frame.left + ScreenRate,
-					frame.top + CORNER_WIDTH, paint);
-			canvas.drawRect(frame.left, frame.top, frame.left + CORNER_WIDTH, frame.top
-					+ ScreenRate, paint);
-			canvas.drawRect(frame.right - ScreenRate, frame.top, frame.right,
-					frame.top + CORNER_WIDTH, paint);
-			canvas.drawRect(frame.right - CORNER_WIDTH, frame.top, frame.right, frame.top
-					+ ScreenRate, paint);
-			canvas.drawRect(frame.left, frame.bottom - CORNER_WIDTH, frame.left
-					+ ScreenRate, frame.bottom, paint);
-			canvas.drawRect(frame.left, frame.bottom - ScreenRate,
-					frame.left + CORNER_WIDTH, frame.bottom, paint);
-			canvas.drawRect(frame.right - ScreenRate, frame.bottom - CORNER_WIDTH,
-					frame.right, frame.bottom, paint);
-			canvas.drawRect(frame.right - CORNER_WIDTH, frame.bottom - ScreenRate,
-					frame.right, frame.bottom, paint);
+			canvas.drawRect(frame.left , frame.top , frame.left + ScreenRate,frame.top + CORNER_WIDTH, paint);
+			canvas.drawRect(frame.left, frame.top, frame.left + CORNER_WIDTH, frame.top+ ScreenRate, paint);
+			
+			canvas.drawRect(frame.right - ScreenRate, frame.top, frame.right,frame.top + CORNER_WIDTH, paint);
+			canvas.drawRect(frame.right - CORNER_WIDTH, frame.top, frame.right, frame.top+ ScreenRate, paint);
+			
+			canvas.drawRect(frame.left, frame.bottom - CORNER_WIDTH, frame.left+ ScreenRate, frame.bottom, paint);
+			canvas.drawRect(frame.left, frame.bottom - ScreenRate,frame.left + CORNER_WIDTH, frame.bottom, paint);
+			
+			canvas.drawRect(frame.right - ScreenRate, frame.bottom - CORNER_WIDTH,frame.right, frame.bottom, paint);
+			canvas.drawRect(frame.right - CORNER_WIDTH, frame.bottom - ScreenRate,frame.right, frame.bottom, paint);
 
+			//===2017/11/21===繪製切齊左右的線
+			Paint linePaint = new Paint();
+	        linePaint.setAntiAlias(true);//设置抗锯齿开关
+	        linePaint.setColor(Color.parseColor("#E63F00"));//--設定顏色
+	        //linePaint.setStyle(Style.STROKE);//设置绘制模式
+	        //linePaint.setPathEffect(new DashPathEffect(new float[]{20f,10f,5f}, 0));//线的显示效果：破折号格式
+	        linePaint.setStrokeWidth(5);// 设置线宽
+			/*	startX：起始端点的X坐标。
+			startY：起始端点的Y坐标。
+			stopX：终止端点的X坐标。
+			stopY：终止端点的Y坐标。
+			paint：绘制直线所使用的画笔。*/
+			int ux = frame.left+((frame.right - frame.left)/2);
+			canvas.drawLine(ux, frame.top, ux, frame.bottom, linePaint); //绘制直线 
+			
+			
+			
 			
 			//绘制中间的线,每次刷新界面，中间的线往下移动SPEEN_DISTANCE
-			
 			slideTop += SPEEN_DISTANCE;
 			if(slideTop >= frame.bottom){
 				slideTop = frame.top;
@@ -216,7 +229,8 @@ public final class ViewfinderView extends View {
             
             //--修修改支援API22 
             //canvas.drawBitmap(((BitmapDrawable)(getResources().getDrawable(R.drawable.qrcode_scan_line))).getBitmap(), null, lineRect, paint); 
-            canvas.drawBitmap(((BitmapDrawable)(ContextCompat.getDrawable(getContext(), R.drawable.qrcode_scan_line))).getBitmap(), null, lineRect, paint); //--修修改支援API22 
+            //===2017/11/21===註解之後就沒有線在那邊移動
+            //canvas.drawBitmap(((BitmapDrawable)(ContextCompat.getDrawable(getContext(), R.drawable.qrcode_scan_line))).getBitmap(), null, lineRect, paint); //--修修改支援API22 
    
             
             //Log.i("讀取點", "讀取點");
@@ -263,8 +277,8 @@ public final class ViewfinderView extends View {
 
 			
 			//只刷新扫描框的内容，其他地方不刷新
-			postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top,
-					frame.right, frame.bottom);
+			//===2017/11/21===註解後不刷新
+			//postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top,frame.right, frame.bottom);
 			
 		}
 	}

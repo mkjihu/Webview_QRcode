@@ -305,8 +305,10 @@ public final class CameraManager {
    * A factory method to build the appropriate LuminanceSource object based on the format
    * of the preview buffers, as described by Camera.Parameters.
    *
-   * @param data A preview frame.
-   * @param width The width of the image.
+根据格式构建适当的LuminanceSource对象的工厂方法
+    预览缓冲区的*，由Camera.Parameters描述。
+   * @param data A preview frame. 数据预览框架
+   * @param width The width of the image. 宽度图像的宽度。
    * @param height The height of the image.
    * @return A PlanarYUVLuminanceSource instance.
    */

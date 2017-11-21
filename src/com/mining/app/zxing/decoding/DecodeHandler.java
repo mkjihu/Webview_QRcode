@@ -16,10 +16,15 @@
 
 package com.mining.app.zxing.decoding;
 
+import java.io.ByteArrayOutputStream;
 import java.util.Hashtable;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -65,6 +70,8 @@ final class DecodeHandler extends Handler {
 		}
 	}
 
+	int a = 0;
+	
 	/**
 	 * Decode the data within the viewfinder rectangle, and time how long it
 	 * took. For efficiency, reuse the same reader objects from one decode to
@@ -80,8 +87,8 @@ final class DecodeHandler extends Handler {
 	//-解码取景器矩形内的数据
 	private void decode(byte[] data, int width, int height) {
 		
-		Log.i("解码开始", "预览框的宽度"+width);
-		Log.i("解码开始", "预览框的高度"+height);
+		//Log.i("解码开始", "预览框的宽度"+width);
+		//Log.i("解码开始", "预览框的高度"+height);
 		
 		long start = System.currentTimeMillis();
 		Result rawResult = null;
@@ -95,24 +102,42 @@ final class DecodeHandler extends Handler {
 		int tmp = width; // Here we are swapping, that's the difference to #11
 		width = height;
 		height = tmp;
-		Log.i("解码开始2", "预览框的宽度"+height);
+		
+		Log.i("解码开始2", "预览框的宽度"+width);
 		Log.i("解码开始2", "预览框的高度"+height);
 		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
 		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+		//Log.i("解码开始3", "预览框的宽度"+source.getDataWidth());
+		//Log.i("解码开始3", "预览框的高度"+source.getDataHeight());
 		
-		Bitmap bitmap1 = BitmapFactory.decodeByteArray(rotatedData, 0, rotatedData.length);
-    	Log.i("圖片高寬", bitmap1.getHeight()+","+bitmap1.getWidth());
-		//-此处截图测试
-		MyApplication.getInstance().bitmap2 = bitmap1;
+		if (source.renderCroppedGreyscaleBitmap()!=null) {
+			Log.i("解码开始2", "有圖");
+			a++;
+			if (a==2) {
+				MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
+			}
+		}
+		
+		
 		try {
+			
 			rawResult = multiFormatReader.decodeWithState(bitmap);
+			Log.i("解码开始2", "有圖2");
 		} catch (ReaderException re) {
 			// continue
+			Log.i("解析出錯", "繼續");
 		} finally {
 			multiFormatReader.reset();
 		}
 
 		if (rawResult != null) {
+			//~~~~~~~~~~~~~~~~~ 
+			//Bitmap bitmap1 = getbitmap(data);
+			//Log.i("圖片高寬", bitmap1.getHeight()+","+bitmap1.getWidth());
+			//-此处截图测试
+			MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
+			//~~~~~~~~~~~~~~~~~
+			
 			long end = System.currentTimeMillis();
 			Log.i("找到条形码", "Found barcode (" + (end - start) + " ms):\n"+ rawResult.toString());
 			Message message = Message.obtain(activity.getHandler(),R.id.decode_succeeded, rawResult);
@@ -127,4 +152,28 @@ final class DecodeHandler extends Handler {
 		}
 	}
 
+	//===================2017/11/20===================================================================
+	public Bitmap getbitmap(byte[] data) {
+      //处理data  
+		byte[] rawImage;  
+	    Bitmap bitmap; 
+      Camera.Size previewSize = MyApplication.getInstance().previewSize;//获取尺寸,格式转换的时候要用到  
+      BitmapFactory.Options newOpts = new BitmapFactory.Options();  
+      newOpts.inJustDecodeBounds = true;  
+      YuvImage yuvimage = new YuvImage(  
+              data,  
+              ImageFormat.NV21,  
+              previewSize.width,  
+              previewSize.height,  
+              null);  
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();  
+      yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 100, baos);// 80--JPG图片的质量[0-100],100最高  
+      rawImage = baos.toByteArray();  
+      //将rawImage转换成bitmap  
+      BitmapFactory.Options options = new BitmapFactory.Options();  
+      options.inPreferredConfig = Bitmap.Config.RGB_565;  
+      bitmap = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.length, options);  
+      return bitmap;
+      
+	}
 }

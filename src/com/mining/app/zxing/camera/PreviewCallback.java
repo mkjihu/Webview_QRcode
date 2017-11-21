@@ -16,7 +16,16 @@
 
 package com.mining.app.zxing.camera;
 
+import java.io.ByteArrayOutputStream;
+
+import com.example.webview_qrcode.MyApplication;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.Message;
@@ -49,12 +58,15 @@ final class PreviewCallback implements Camera.PreviewCallback {
     	Log.i("使用一次预览回调", "使用一次预览回调");
       camera.setPreviewCallback(null);
     }
+    
+    
     if (previewHandler != null) {
     	
-    	Log.i("获得扫描资料", "获得扫描资料");
-      Message message = previewHandler.obtainMessage(previewMessage, cameraResolution.x,cameraResolution.y, data);
-      message.sendToTarget();
-      previewHandler = null;
+    	Log.i("這裡獲得當前", "获得扫描圖像资料");
+    	MyApplication.getInstance().previewSize = camera.getParameters().getPreviewSize();//获取尺寸,格式转换的时候要用到  
+    	Message message = previewHandler.obtainMessage(previewMessage, cameraResolution.x,cameraResolution.y, data);
+    	message.sendToTarget();
+    	previewHandler = null;
     } else {
       Log.d(TAG, "Got preview callback, but no handler for it");
     }
