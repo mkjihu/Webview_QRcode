@@ -65,7 +65,7 @@ public final class CaptureActivityHandler extends Handler {
 
   @Override
   public void handleMessage(Message message) {
-	  Log.i("解碼解果", message.what+"");
+	  //Log.i("解碼解果", message.what+"");
     switch (message.what) {
       case R.id.auto_focus:
         //Log.d(TAG, "Got auto-focus message");
@@ -106,6 +106,11 @@ public final class CaptureActivityHandler extends Handler {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
         activity.startActivity(intent);
         break;
+      case R.id.decode_LROK://解碼右邊
+    	  state = State.SUCCESS;
+    	  Log.i("解碼成功", "解碼成功");
+    	  activity.handleDecode2();
+          break;
     }
   }
 

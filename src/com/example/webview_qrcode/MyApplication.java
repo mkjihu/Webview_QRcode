@@ -9,8 +9,14 @@ public class MyApplication extends Application{
 	private static Context context;
     private static MyApplication instance;
     
-    public static Bitmap bitmap;
-    public static Bitmap bitmap2;
+    public Bitmap bitmap;
+    public Bitmap bitmap2;
+    
+    public boolean au = false;
+    public boolean bu = false;
+    
+    public String a = "";
+	public String b = "";
     
     public static Camera.Size previewSize;
     

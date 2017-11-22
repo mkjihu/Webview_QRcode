@@ -61,7 +61,7 @@ final class DecodeHandler extends Handler {
 	public void handleMessage(Message message) {
 		switch (message.what) {
 		case R.id.decode:
-			Log.i("得到解码消息", "Got decode message");
+			//Log.i("得到解码消息", "Got decode message");
 			decode((byte[]) message.obj, message.arg1, message.arg2);
 			break;
 		case R.id.quit:
@@ -103,29 +103,113 @@ final class DecodeHandler extends Handler {
 		width = height;
 		height = tmp;
 		
-		Log.i("解码开始2", "预览框的宽度"+width);
-		Log.i("解码开始2", "预览框的高度"+height);
+		//Log.i("解码开始2", "预览框的宽度"+width);
+		//Log.i("解码开始2", "预览框的高度"+height);
 		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
-		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+		
+		
+		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));//--傳入亮度来源解碼
 		//Log.i("解码开始3", "预览框的宽度"+source.getDataWidth());
 		//Log.i("解码开始3", "预览框的高度"+source.getDataHeight());
 		
+		
+		
+		
+		
 		if (source.renderCroppedGreyscaleBitmap()!=null) {
-			Log.i("解码开始2", "有圖");
-			a++;
-			if (a==2) {
-				MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
+			//Log.i("解码开始2", "有圖");
+			/**/
+        	//参数说明：
+        	//Bitmap source：要从中截图的原始位图
+        	//int x:起始x坐标
+        	//int y：起始y坐标
+			//int width：要截的图的宽度
+			//int height：要截的图的高度
+        	//http://blog.csdn.net/fq813789816/article/details/54017074
+      
+          	Hashtable<DecodeHintType, String> hints = new Hashtable<DecodeHintType, String>();
+    		hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //设置二维码内容的编码
+    		
+    		Bitmap bm1 = null;
+    		Bitmap bm2 = null;
+    		Result ka1 = null;
+    		Result ka2 = null;
+    		
+    		if (!MyApplication.getInstance().au) {
+    			
+    		  	bm1 = Bitmap.createBitmap(source.renderCroppedGreyscaleBitmap()
+            			, 0
+            			, 0
+                        , source.renderCroppedGreyscaleBitmap().getWidth()/2
+                        , source.renderCroppedGreyscaleBitmap().getHeight());//邊長取正數+四捨五入
+    		  	RGBLuminanceSource source1 = new RGBLuminanceSource(bm1);
+        		BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source1));
+        		
+    			try {
+        			ka1 = multiFormatReader.decode(bitmap1, hints);
+    				Log.i("左邊 ", ka1.toString());
+    			} catch (Exception e) {
+    				//Log.i("解析出錯", "繼續");
+    			}finally {
+    				multiFormatReader.reset();
+        		}
+			}
+    		
+    		if (!MyApplication.getInstance().bu) {
+    			
+    			
+    			bm2 = Bitmap.createBitmap(source.renderCroppedGreyscaleBitmap()
+            			, source.renderCroppedGreyscaleBitmap().getWidth()/2
+            			, 0
+                        , source.renderCroppedGreyscaleBitmap().getWidth()/2
+                        , source.renderCroppedGreyscaleBitmap().getHeight());//邊長取正數+四捨五入
+    			RGBLuminanceSource source2 = new RGBLuminanceSource(bm2);
+        		BinaryBitmap bitmap2 = new BinaryBitmap(new HybridBinarizer(source2));
+        		
+        		try {
+        			ka2 = multiFormatReader.decode(bitmap2, hints);
+    				Log.i("右邊 ", ka2.toString());
+    			} catch (Exception e) {
+    				// TODO: handle exception
+    			}finally {
+    				multiFormatReader.reset();
+        		}
+    		}
+
+    		
+    		if (ka1 != null) {
+    			MyApplication.getInstance().au = true;
+    			MyApplication.getInstance().a = ka1.toString();
+    			 // 回收并且置为null
+    			bm1.recycle(); 
+    			bm1 = null; 
+			}
+    		if (ka2 != null) {
+    			MyApplication.getInstance().bu = true;
+    			MyApplication.getInstance().b = ka2.toString();
+    			// 回收并且置为null
+    			bm2.recycle(); 
+    			bm2 = null; 
+			}
+    		if (MyApplication.getInstance().au&&MyApplication.getInstance().bu) {
+    			
+    			Message message = Message.obtain(activity.getHandler(),R.id.decode_LROK, rawResult);
+    			message.sendToTarget();
+    			return;
 			}
 		}
 		
+		Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
+		message.sendToTarget();
+		
+		
+		/*///===20147/11/22=== 註解
 		
 		try {
-			
 			rawResult = multiFormatReader.decodeWithState(bitmap);
-			Log.i("解码开始2", "有圖2");
 		} catch (ReaderException re) {
 			// continue
-			Log.i("解析出錯", "繼續");
+			
 		} finally {
 			multiFormatReader.reset();
 		}
@@ -135,21 +219,25 @@ final class DecodeHandler extends Handler {
 			//Bitmap bitmap1 = getbitmap(data);
 			//Log.i("圖片高寬", bitmap1.getHeight()+","+bitmap1.getWidth());
 			//-此处截图测试
-			MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
+			//MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
 			//~~~~~~~~~~~~~~~~~
-			
+			//MyApplication.getInstance().bitmap2 = source.renderCroppedGreyscaleBitmap();
 			long end = System.currentTimeMillis();
 			Log.i("找到条形码", "Found barcode (" + (end - start) + " ms):\n"+ rawResult.toString());
+			
 			Message message = Message.obtain(activity.getHandler(),R.id.decode_succeeded, rawResult);
 			Bundle bundle = new Bundle();
 			bundle.putParcelable(DecodeThread.BARCODE_BITMAP,source.renderCroppedGreyscaleBitmap());
 			message.setData(bundle);
 			// Log.d(TAG, "Sending decode succeeded message...");
 			message.sendToTarget();
+			//Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
+			//message.sendToTarget();
 		} else {
 			Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
 			message.sendToTarget();
 		}
+		*/
 	}
 
 	//===================2017/11/20===================================================================

@@ -29,6 +29,12 @@
   <item type="id" name="search_book_contents_failed"/>
   <item type="id" name="search_book_contents_succeeded"/>
   
+  <item type="id" name="decode_l"/>
+  <item type="id" name="decode_R"/>
+  <item type="id" name="decode_LROK"/>
+  
+  
+  
   
   
   <item type="id" name="gridview" />
@@ -36,4 +42,7 @@
   
   <item type="id" name="about_version_code">false</item>
   <item type="id" name="split">false</item>
+  
+  
+  
 </resources>

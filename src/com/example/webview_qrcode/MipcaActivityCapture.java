@@ -75,6 +75,12 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_capture);
 		
+		{//=重至所有參數
+			MyApplication.getInstance().a = "";
+			MyApplication.getInstance().b = "";
+			MyApplication.getInstance().au = false;
+			MyApplication.getInstance().bu = false;
+		}
 		
 		//ViewUtil.addTopView(getApplicationContext(), this, R.string.scan_card);
 		CameraManager.init(getApplication());
@@ -266,6 +272,15 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		onResultHandler(resultString, barcode);
 	}
 	
+	/** 处理扫描结果 ///2017/11/22 左右*/
+	public void handleDecode2() {
+		if (!MyApplication.getInstance().a.equals("") && !MyApplication.getInstance().b.equals("")) {
+			Log.i("阿姆挖出運啦", MyApplication.getInstance().a+MyApplication.getInstance().b);
+		}
+	}
+	
+	
+	
 	/**
 	 * 跳转到上一个页面
 	 * @param resultString
@@ -358,7 +373,7 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 	}
 
 	private static final long VIBRATE_DURATION = 200L;
-
+	//播放哔哔声和振动
 	private void playBeepSoundAndVibrate() {
 		if (playBeep && mediaPlayer != null) {
 			mediaPlayer.start();

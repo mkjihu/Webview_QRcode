@@ -55,14 +55,14 @@ final class PreviewCallback implements Camera.PreviewCallback {
 	//获取到每个帧数据data  
     Point cameraResolution = configManager.getCameraResolution();//获得相机分辨率
     if (!useOneShotPreviewCallback) {//使用一次预览回调
-    	Log.i("使用一次预览回调", "使用一次预览回调");
+    	//Log.i("使用一次预览回调", "使用一次预览回调");
       camera.setPreviewCallback(null);
     }
     
     
     if (previewHandler != null) {
     	
-    	Log.i("這裡獲得當前", "获得扫描圖像资料");
+    	//Log.i("這裡獲得當前", "获得扫描圖像资料");
     	MyApplication.getInstance().previewSize = camera.getParameters().getPreviewSize();//获取尺寸,格式转换的时候要用到  
     	Message message = previewHandler.obtainMessage(previewMessage, cameraResolution.x,cameraResolution.y, data);
     	message.sendToTarget();

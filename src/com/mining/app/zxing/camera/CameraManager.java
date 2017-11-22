@@ -227,7 +227,7 @@ public final class CameraManager {
       if (camera == null) {
         return null;
       }
-      int width = screenResolution.x * 3 / 4;
+      int width = screenResolution.x * 3 / 4; //寬事全螢幕的3/4;
       
       /*
       if (width < MIN_FRAME_WIDTH) {
@@ -323,6 +323,7 @@ public final class CameraManager {
       // This format has never been seen in the wild, but is compatible as we only care
       // about the Y channel, so allow it.
       case PixelFormat.YCbCr_422_SP:
+    	  Log.i("A", rect.left+","+rect.top);
         return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
             rect.width(), rect.height());
       default:

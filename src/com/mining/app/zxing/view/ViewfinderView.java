@@ -35,6 +35,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+import com.example.webview_qrcode.MyApplication;
 import com.example.webview_qrcode.R;
 import com.google.zxing.ResultPoint;
 import com.mining.app.zxing.camera.CameraManager;
@@ -214,6 +215,24 @@ public final class ViewfinderView extends View {
 			canvas.drawLine(ux, frame.top, ux, frame.bottom, linePaint); //绘制直线 
 			
 			
+			//===2017/11/22===繪製內縮框+圓
+			
+			//paint.setColor(Color.BLACK);//--設定顏色
+			//int myColor = context.getResources().getColor(R.color.aabswet);
+			int x = frame.left+((frame.right - frame.left)/4);
+			int y = frame.top +((frame.bottom - frame.top)/2); //y起始座標 
+			if (MyApplication.getInstance().au) {
+				/*A圓 cx：圆心的x坐标。cy：圆心的y坐标。radius：圆的半径。paint：绘制时所使用的画笔。*/
+				canvas.drawCircle(x, y, 60, paint);  
+			}
+			int x2 = frame.left+((frame.right - frame.left)*3/4);
+			if (MyApplication.getInstance().bu) {
+				/*B圓 cx：圆心的x坐标。cy：圆心的y坐标。radius：圆的半径。paint：绘制时所使用的画笔。*/
+				canvas.drawCircle(x2, y, 60, paint);   
+			} 
+			
+			
+			
 			
 			
 			//绘制中间的线,每次刷新界面，中间的线往下移动SPEEN_DISTANCE
@@ -278,7 +297,7 @@ public final class ViewfinderView extends View {
 			
 			//只刷新扫描框的内容，其他地方不刷新
 			//===2017/11/21===註解後不刷新
-			//postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top,frame.right, frame.bottom);
+			postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top,frame.right, frame.bottom);
 			
 		}
 	}

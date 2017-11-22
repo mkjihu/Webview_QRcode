@@ -24,7 +24,6 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
 	public WebView webView;
-	public ImageView imageView1;
 	public final int REQUEST_CODE_ASK_CALL_PHONEk=1;
 	private final int OK_CAMERA = 11;
 	private final static int SCANNIN_GREQUEST_CODE = 1;
@@ -49,14 +48,31 @@ public class MainActivity extends AppCompatActivity {
 					,Manifest.permission.READ_PHONE_STATE}, OK_CAMERA);
 
 		}
-		
-		aq.id(R.id.imageView1).clicked(new OnClickListener() {
+		aq.id(R.id.button1).clicked(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
 				Bitmap bitmap = MyApplication.getInstance().bitmap2;
+				Log.i("幹", "幹");
+				/**/
+	        	//参数说明：
+	        	//Bitmap source：要从中截图的原始位图
+	        	//int x:起始x坐标
+	        	//int y：起始y坐标
+				//int width：要截的图的宽度
+				//int height：要截的图的高度
+	        	//http://blog.csdn.net/fq813789816/article/details/54017074
+				/*
+	        	Bitmap bm = Bitmap.createBitmap(bitmap
+	        			, 0
+	        			, 0
+	                    , bitmap.getWidth()/2
+	                    , bitmap.getHeight());//邊長取正數+四捨五入
+	        	*/
 				if (bitmap !=null) {
-					aq.id(imageView1).image(bitmap);
+					aq.id(R.id.imageView1).image(bitmap);
+				}else{
+					Log.i("GG", "沒圖");
 				}
 				
 			}
@@ -104,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
 				String dfg = bundle.getString("result");
 				Log.i("回傳", dfg);
 				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
-				Bitmap bitmap = MyApplication.getInstance().bitmap2;
-				aq.id(imageView1).image(bitmap);
+				Bitmap bitmap = MyApplication.getInstance().bitmap;
+				aq.id(R.id.imageView1).image(bitmap);
 			}
 			break;
 		}

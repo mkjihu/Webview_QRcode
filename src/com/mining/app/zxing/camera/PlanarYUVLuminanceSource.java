@@ -19,6 +19,7 @@ package com.mining.app.zxing.camera;
 import com.google.zxing.LuminanceSource;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 /**
  * This object extends LuminanceSource around an array of YUV data returned from the camera driver,
@@ -37,6 +38,7 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
   private final int left;
   private final int top;
 
+  
   public PlanarYUVLuminanceSource(byte[] yuvData, int dataWidth, int dataHeight, int left, int top,
       int width, int height) {
     super(width, height);
@@ -47,9 +49,12 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
 
     this.yuvData = yuvData;
     this.dataWidth = dataWidth;
+    
     this.dataHeight = dataHeight;
     this.left = left;
     this.top = top;
+    
+    //Log.i("dataWidth", dataWidth+"~"+dataHeight+"~"+left+"~"+top);
   }
 
   @Override
@@ -72,7 +77,7 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
     int height = getHeight();
 
     // If the caller asks for the entire underlying image, save the copy and give them the
-    // original data. The docs specifically warn that result.length must be ignored.
+    // original data. The docs specifically warn that result.length must be ignored. 如果调用者要求整个底层图像，请保存副本并为其提供原始数据。 文档特别警告result.length必须被忽略。
     if (width == dataWidth && height == dataHeight) {
       return yuvData;
     }
@@ -87,7 +92,7 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
       return matrix;
     }
 
-    // Otherwise copy one cropped row at a time.
+    // Otherwise copy one cropped row at a time. 一次只复制一个裁剪后的行。
     byte[] yuv = yuvData;
     for (int y = 0; y < height; y++) {
       int outputOffset = y * width;
@@ -112,7 +117,9 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
 
   public Bitmap renderCroppedGreyscaleBitmap() {
     int width = getWidth();
+    //Log.i("幹", width+"");
     int height = getHeight();
+    //Log.i("幹", height+"");
     int[] pixels = new int[width * height];
     byte[] yuv = yuvData;
     int inputOffset = top * dataWidth + left;
