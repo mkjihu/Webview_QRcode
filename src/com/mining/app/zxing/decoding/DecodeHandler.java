@@ -50,6 +50,11 @@ final class DecodeHandler extends Handler {
 	private final MipcaActivityCapture activity;
 	private final MultiFormatReader multiFormatReader;
 
+	private Bitmap bm1;
+	private Bitmap bm2;
+	private Result ka1;
+	private Result ka2;
+	
 	DecodeHandler(MipcaActivityCapture activity,
 			Hashtable<DecodeHintType, Object> hints) {
 		multiFormatReader = new MultiFormatReader();
@@ -86,14 +91,14 @@ final class DecodeHandler extends Handler {
 	 */
 	//-解码取景器矩形内的数据
 	private void decode(byte[] data, int width, int height) {
-		
+		 // 首先，要取得该图片的像素数组内容
 		//Log.i("解码开始", "预览框的宽度"+width);
 		//Log.i("解码开始", "预览框的高度"+height);
 		
 		long start = System.currentTimeMillis();
 		Result rawResult = null;
 
-		// modify here 在這裡修改
+		// modify here 在這裡修改 // 将int数组转换为byte数组
 		byte[] rotatedData = new byte[data.length];
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++)
@@ -107,14 +112,9 @@ final class DecodeHandler extends Handler {
 		//Log.i("解码开始2", "预览框的高度"+height);
 		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
 		
-		
 		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));//--傳入亮度来源解碼
 		//Log.i("解码开始3", "预览框的宽度"+source.getDataWidth());
 		//Log.i("解码开始3", "预览框的高度"+source.getDataHeight());
-		
-		
-		
-		
 		
 		if (source.renderCroppedGreyscaleBitmap()!=null) {
 			//Log.i("解码开始2", "有圖");
@@ -128,12 +128,14 @@ final class DecodeHandler extends Handler {
         	//http://blog.csdn.net/fq813789816/article/details/54017074
       
           	Hashtable<DecodeHintType, String> hints = new Hashtable<DecodeHintType, String>();
-    		hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //设置二维码内容的编码
+    		//hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //UTF-8设置二维码内容的编码
+    		hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
     		
-    		Bitmap bm1 = null;
-    		Bitmap bm2 = null;
-    		Result ka1 = null;
-    		Result ka2 = null;
+    		
+    		bm1 = null;
+    		bm2 = null;
+    		ka1 = null;
+    		ka2 = null;
     		
     		if (!MyApplication.getInstance().au) {
     			

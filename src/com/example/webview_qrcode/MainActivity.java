@@ -1,6 +1,7 @@
 package com.example.webview_qrcode;
 
 import com.androidquery.AQuery;
+import com.google.gson.Gson;
 
 import android.Manifest;
 import android.app.Activity;
@@ -119,9 +120,37 @@ public class MainActivity extends AppCompatActivity {
 				Bundle bundle = data.getExtras();//bundle.getString("result")
 				String dfg = bundle.getString("result");
 				Log.i("回傳", dfg);
-				webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
-				Bitmap bitmap = MyApplication.getInstance().bitmap;
-				aq.id(R.id.imageView1).image(bitmap);
+				if (dfg.equals("無法解析，左右格式錯誤")) {
+					Invoice invoice = new Gson().fromJson(dfg, Invoice.class);
+					
+					String dfg2 = "發票字軌:"+invoice.getTrack()+"\n"
+									+",發票開立日期:"+invoice.getDate()+"\n"
+									+",隨機碼:"+invoice.getRandomcode()+"\n"
+									+",銷售額:"+invoice.getSales()+"\n"
+									+",總計額:"+invoice.getTotal()+"\n"
+									+",買方統一編號:"+invoice.getBuyerUnified()+"\n"
+									+",賣方統一編號:"+invoice.getSellerUnified()+"\n"				
+									+",加密驗證資訊:"+invoice.getEncryption()+"\n"	
+									+",營業人自行使用區:"+invoice.getArea()+"\n"	
+									+",完整品目筆數:"+invoice.getCount()+"\n"	
+									+",交易品目總筆數:"+invoice.getTotalnumber()+"\n"	
+									+",中文編碼參數:"+invoice.getCoding()+"\n";
+					String dfg3 = "";
+					for (int i = 0; i < invoice.getIteers().size(); i++) {
+						dfg3 =dfg3
+								+"品名:"+invoice.getIteers().get(i).getName()
+								+",數量:"+invoice.getIteers().get(i).getNumber()
+								+",單價:"+invoice.getIteers().get(i).getPrice();
+					}
+					webView.loadUrl("javascript:callFromActivity('" + dfg2+dfg3 + "')");
+				}
+				else
+				{
+					webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
+				}
+				
+				//Bitmap bitmap = MyApplication.getInstance().bitmap;
+				//aq.id(R.id.imageView1).image(bitmap);
 			}
 			break;
 		}

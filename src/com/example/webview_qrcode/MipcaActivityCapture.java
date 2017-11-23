@@ -1,6 +1,7 @@
 package com.example.webview_qrcode;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -34,6 +35,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
@@ -272,13 +274,114 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		onResultHandler(resultString, barcode);
 	}
 	
+	public String Ra,Rb;
+	
 	/** 处理扫描结果 ///2017/11/22 左右*/
 	public void handleDecode2() {
+		String resultString = "";
+		
 		if (!MyApplication.getInstance().a.equals("") && !MyApplication.getInstance().b.equals("")) {
 			Log.i("阿姆挖出運啦", MyApplication.getInstance().a+MyApplication.getInstance().b);
+			Ra = MyApplication.getInstance().a;
+			Rb = MyApplication.getInstance().b;
+			playBeepSoundAndVibrate();
+			
+			String aandb;
+			
+			String a = Ra.substring(0, 2);
+			String b = Rb.substring(0, 2);
+			
+			try {
+				if (a.endsWith("**")) {
+					//b才是左
+					aandb = Rb+Ra.substring(2, Ra.length());
+					
+					resultString = new Gson().toJson(invoice(aandb));
+					
+				} else if (b.endsWith("**")) {
+					aandb = Ra+Rb.substring(2, Rb.length());
+					resultString = new Gson().toJson(invoice(aandb));
+				} else {
+					resultString = "無法解析，左右格式錯誤";
+				}
+			} catch (Exception e) {
+				resultString = "無法解析，左右格式錯誤";
+			}
+			
 		}
+		Log.i("結果", resultString);
+		
+		
+		Intent resultIntent = new Intent();
+		Bundle bundle = new Bundle();
+		
+		bundle.putString("result", resultString);
+		resultIntent.putExtras(bundle);
+		this.setResult(RESULT_OK, resultIntent);
+		MipcaActivityCapture.this.finish();
+		
 	}
 	
+	private Invoice invoice(String aandb) {
+		
+		String track = aandb.substring(0, 10);//發票字軌 10
+		
+		String date = aandb.substring(10, 17);//發票開立日期 7
+		
+		String Randomcode = aandb.substring(17, 21);//隨機碼 4
+		
+		String Sales = aandb.substring(21, 29);//銷售額 8
+		
+		String Total = aandb.substring(29, 37);//總計額 8
+		
+		String BuyerUnified = aandb.substring(37, 45);//買方統一編號 8
+		
+		String SellerUnified = aandb.substring(45, 53);//賣方統一編號 8
+		
+		String Encryption = aandb.substring(53, 77);//加密驗證資訊 24
+		
+		//-接下來都是經過":"分開的資料
+		
+		String[] starl = aandb.split(":");//拆解分析
+		
+		//starl[0]//不需要
+		
+		
+		String area = starl[1];//營業人自行使用區 (10 位)：提供營業人自行放置所需資訊，若不使用則以 10 個“*”符號呈現。
+		String Count = starl[2];//完整品目筆數
+		String totalnumber = starl[3];//交易品目總筆數
+		String coding  = starl[4];//中文編碼參數//(1) Big5 編碼，則此值為 0  (2) UTF-8 編碼，則此值為 1   (3) Base64 編碼，則此值為 2
+		
+		Invoice invoice = new Invoice();
+		invoice.setTrack(track);
+		invoice.setDate(date);
+		invoice.setRandomcode(Randomcode);
+		invoice.setSales(Sales);
+		invoice.setTotal(Total);
+		invoice.setBuyerUnified(BuyerUnified);
+		invoice.setSellerUnified(SellerUnified);
+		invoice.setEncryption(Encryption);
+		
+		invoice.setArea(area);
+		invoice.setCount(Count);
+		invoice.setTotalnumber(totalnumber);
+		invoice.setCoding(coding);
+		ArrayList<iteer> iteers = new ArrayList<>();
+		
+		//接下來三項1組  品名   數量  單價		
+		for (int i = 5; i < starl.length; i+=3) {//三個一組
+			Log.i("品名", starl[i]);
+			Log.i("數量", starl[i+1]);
+			Log.i("單價", starl[i+2]);
+			iteer iteer  = new iteer();
+			iteer.setName(starl[i]);
+			iteer.setNumber(starl[i+1]);
+			iteer.setPrice(starl[i+2]);
+			iteers.add(iteer);
+		}
+		invoice.setIteers(iteers);
+		return invoice;
+	}
 	
 	
 	/**
