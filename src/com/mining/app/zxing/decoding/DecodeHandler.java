@@ -18,6 +18,7 @@ package com.mining.app.zxing.decoding;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,12 +35,14 @@ import android.util.Log;
 import com.example.webview_qrcode.MipcaActivityCapture;
 import com.example.webview_qrcode.MyApplication;
 import com.example.webview_qrcode.R;
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.multi.qrcode.QRCodeMultiReader;
 import com.mining.app.zxing.camera.CameraManager;
 import com.mining.app.zxing.camera.PlanarYUVLuminanceSource;
 
@@ -49,17 +52,42 @@ final class DecodeHandler extends Handler {
 
 	private final MipcaActivityCapture activity;
 	private final MultiFormatReader multiFormatReader;
-
+	private QRCodeMultiReader qrCodeMultiReader;
 	private Bitmap bm1;
 	private Bitmap bm2;
 	private Result ka1;
 	private Result ka2;
+	private Hashtable<DecodeHintType, Object> hints;
+	
+	private Hashtable<DecodeHintType, Object> hints2;
+	
 	
 	DecodeHandler(MipcaActivityCapture activity,
 			Hashtable<DecodeHintType, Object> hints) {
 		multiFormatReader = new MultiFormatReader();
 		multiFormatReader.setHints(hints);
+		this.hints = hints;
+		qrCodeMultiReader = new QRCodeMultiReader();
+		
+		
 		this.activity = activity;
+		
+		//======11/27======
+	    // 解码的参数
+	    hints2 = new Hashtable<DecodeHintType, Object>(2);
+	    // 可以解析的编码类型
+	    Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
+	    if (decodeFormats == null || decodeFormats.isEmpty()) {
+	        decodeFormats = new Vector<BarcodeFormat>();
+	        // 这里设置可扫描的类型，我这里选择了都支持
+	        //decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
+	        decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+	        decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
+	    }
+	    hints2.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
+	    // 设置继续的字符编码格式为UTF8
+	    hints2.put(DecodeHintType.CHARACTER_SET, "UTF-8");
+		
 	}
 
 	@Override
@@ -108,14 +136,58 @@ final class DecodeHandler extends Handler {
 		width = height;
 		height = tmp;
 		
-		//Log.i("解码开始2", "预览框的宽度"+width);
-		//Log.i("解码开始2", "预览框的高度"+height);
+		
 		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
+		//BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));//--傳入亮度来源解碼
 		
-		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));//--傳入亮度来源解碼
-		//Log.i("解码开始3", "预览框的宽度"+source.getDataWidth());
-		//Log.i("解码开始3", "预览框的高度"+source.getDataHeight());
+		switch (MyApplication.getInstance().Type) {
+		case "1"://原生解碼
+			decoding1(source);
+			break;
+		case "2"://自製解碼
+			decoding2(source, rawResult);
+			break;
+		}
 		
+	}
+
+	
+	
+	
+	
+	
+	//===================2017/11/20===================================================================
+	
+	public void decoding1(PlanarYUVLuminanceSource source) {
+		BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+		
+		Result[] rawResult = null;
+		
+		try {
+			rawResult = qrCodeMultiReader.decodeMultiple(bitmap, hints);
+		} catch (ReaderException re) {
+			// continue
+		} finally {
+			qrCodeMultiReader.reset();
+		}
+		
+		
+		if (rawResult != null && rawResult.length > 1) {
+			Log.i("測試掃描", "測試掃描"+rawResult.length);
+			Message message = Message.obtain(activity.getHandler(),R.id.decode_succeeded, rawResult);
+			Bundle bundle = new Bundle();
+			bundle.putParcelable(DecodeThread.BARCODE_BITMAP,source.renderCroppedGreyscaleBitmap());
+			message.setData(bundle);
+			message.sendToTarget();
+		} else {
+			Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
+			message.sendToTarget();
+		}
+	}
+	
+	
+	//自定
+	public void decoding2(PlanarYUVLuminanceSource source,Result rawResult) {
 		if (source.renderCroppedGreyscaleBitmap()!=null) {
 			//Log.i("解码开始2", "有圖");
 			/**/
@@ -127,10 +199,6 @@ final class DecodeHandler extends Handler {
 			//int height：要截的图的高度
         	//http://blog.csdn.net/fq813789816/article/details/54017074
       
-          	Hashtable<DecodeHintType, String> hints = new Hashtable<DecodeHintType, String>();
-    		//hints.put(DecodeHintType.CHARACTER_SET, "UTF8"); //UTF-8设置二维码内容的编码
-    		hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
-    		
     		
     		bm1 = null;
     		bm2 = null;
@@ -148,7 +216,7 @@ final class DecodeHandler extends Handler {
         		BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source1));
         		
     			try {
-        			ka1 = multiFormatReader.decode(bitmap1, hints);
+        			ka1 = multiFormatReader.decode(bitmap1, hints2);
     				Log.i("左邊 ", ka1.toString());
     			} catch (Exception e) {
     				//Log.i("解析出錯", "繼續");
@@ -158,7 +226,6 @@ final class DecodeHandler extends Handler {
 			}
     		
     		if (!MyApplication.getInstance().bu) {
-    			
     			
     			bm2 = Bitmap.createBitmap(source.renderCroppedGreyscaleBitmap()
             			, source.renderCroppedGreyscaleBitmap().getWidth()/2
@@ -240,30 +307,6 @@ final class DecodeHandler extends Handler {
 			message.sendToTarget();
 		}
 		*/
-	}
-
-	//===================2017/11/20===================================================================
-	public Bitmap getbitmap(byte[] data) {
-      //处理data  
-		byte[] rawImage;  
-	    Bitmap bitmap; 
-      Camera.Size previewSize = MyApplication.getInstance().previewSize;//获取尺寸,格式转换的时候要用到  
-      BitmapFactory.Options newOpts = new BitmapFactory.Options();  
-      newOpts.inJustDecodeBounds = true;  
-      YuvImage yuvimage = new YuvImage(  
-              data,  
-              ImageFormat.NV21,  
-              previewSize.width,  
-              previewSize.height,  
-              null);  
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();  
-      yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 100, baos);// 80--JPG图片的质量[0-100],100最高  
-      rawImage = baos.toByteArray();  
-      //将rawImage转换成bitmap  
-      BitmapFactory.Options options = new BitmapFactory.Options();  
-      options.inPreferredConfig = Bitmap.Config.RGB_565;  
-      bitmap = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.length, options);  
-      return bitmap;
       
 	}
 }

@@ -266,12 +266,16 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 	 * @param result
 	 * @param barcode
 	 */
-	public void handleDecode(Result result, Bitmap barcode) {
+	public void handleDecode(Result[] result, Bitmap barcode) {
 		inactivityTimer.onActivity();
 		playBeepSoundAndVibrate();
-		String resultString = result.getText();
-		Log.i("掃描結果", result.getText());
-		onResultHandler(resultString, barcode);
+		String AA ="";
+		for (int i = 0; i < result.length; i++) {
+			Log.i("測試掃描", result[i].getText());
+			AA +=result[i].getText();
+		}
+		
+		onResultHandler(AA, barcode);
 	}
 	
 	public String Ra,Rb;
@@ -282,8 +286,8 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		
 		if (!MyApplication.getInstance().a.equals("") && !MyApplication.getInstance().b.equals("")) {
 			Log.i("阿姆挖出運啦", MyApplication.getInstance().a+MyApplication.getInstance().b);
-			Ra = MyApplication.getInstance().a;
-			Rb = MyApplication.getInstance().b;
+			Ra = MyApplication.getInstance().a.trim();
+			Rb = MyApplication.getInstance().b.trim();
 			playBeepSoundAndVibrate();
 			
 			String aandb;
@@ -295,17 +299,17 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 				if (a.endsWith("**")) {
 					//b才是左
 					aandb = Rb+Ra.substring(2, Ra.length());
-					
 					resultString = new Gson().toJson(invoice(aandb));
-					
+					Log.i("結果", resultString);
 				} else if (b.endsWith("**")) {
 					aandb = Ra+Rb.substring(2, Rb.length());
 					resultString = new Gson().toJson(invoice(aandb));
-				} else {
-					resultString = "無法解析，左右格式錯誤";
+					Log.i("結果", resultString);
+				} else if((a.endsWith("**")&&b.endsWith("**"))||(!a.endsWith("**")&&!b.endsWith("**"))){
+					resultString = "無法解析2，左右格式錯誤";
 				}
 			} catch (Exception e) {
-				resultString = "無法解析，左右格式錯誤";
+				resultString = "無法解析1，左右格式錯誤";
 			}
 			
 		}
@@ -314,7 +318,7 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		
 		Intent resultIntent = new Intent();
 		Bundle bundle = new Bundle();
-		
+		bundle.putString("Type", "2");
 		bundle.putString("result", resultString);
 		resultIntent.putExtras(bundle);
 		this.setResult(RESULT_OK, resultIntent);
@@ -396,6 +400,7 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 		}
 		Intent resultIntent = new Intent();
 		Bundle bundle = new Bundle();
+		bundle.putString("Type", "1");
 		bundle.putString("result", resultString);
 		//Log.i("有图", bitmap.getWidth()+","+bitmap.getHeight()); 
 		MyApplication.getInstance().bitmap = bitmap;

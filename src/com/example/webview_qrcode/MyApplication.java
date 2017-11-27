@@ -18,6 +18,11 @@ public class MyApplication extends Application{
     public String a = "";
 	public String b = "";
     
+	//-解碼方式
+	public String Type = "1";
+	
+	
+	
     public static Camera.Size previewSize;
     
     

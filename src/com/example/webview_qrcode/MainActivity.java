@@ -78,6 +78,17 @@ public class MainActivity extends AppCompatActivity {
 				
 			}
 		});
+		aq.id(R.id.button2).clicked(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				MyApplication.getInstance().Type = "1";
+
+		    	Intent intent = new Intent(MainActivity.this, MipcaActivityCapture.class);
+				intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivityForResult(intent, SCANNIN_GREQUEST_CODE);
+			}
+		});
 		
 		
 	}
@@ -120,34 +131,45 @@ public class MainActivity extends AppCompatActivity {
 				Bundle bundle = data.getExtras();//bundle.getString("result")
 				String dfg = bundle.getString("result");
 				Log.i("回傳", dfg);
-				if (dfg.equals("無法解析，左右格式錯誤")) {
-					Invoice invoice = new Gson().fromJson(dfg, Invoice.class);
-					
-					String dfg2 = "發票字軌:"+invoice.getTrack()+"\n"
-									+",發票開立日期:"+invoice.getDate()+"\n"
-									+",隨機碼:"+invoice.getRandomcode()+"\n"
-									+",銷售額:"+invoice.getSales()+"\n"
-									+",總計額:"+invoice.getTotal()+"\n"
-									+",買方統一編號:"+invoice.getBuyerUnified()+"\n"
-									+",賣方統一編號:"+invoice.getSellerUnified()+"\n"				
-									+",加密驗證資訊:"+invoice.getEncryption()+"\n"	
-									+",營業人自行使用區:"+invoice.getArea()+"\n"	
-									+",完整品目筆數:"+invoice.getCount()+"\n"	
-									+",交易品目總筆數:"+invoice.getTotalnumber()+"\n"	
-									+",中文編碼參數:"+invoice.getCoding()+"\n";
-					String dfg3 = "";
-					for (int i = 0; i < invoice.getIteers().size(); i++) {
-						dfg3 =dfg3
-								+"品名:"+invoice.getIteers().get(i).getName()
-								+",數量:"+invoice.getIteers().get(i).getNumber()
-								+",單價:"+invoice.getIteers().get(i).getPrice();
-					}
-					webView.loadUrl("javascript:callFromActivity('" + dfg2+dfg3 + "')");
-				}
-				else
-				{
+				String Type = bundle.getString("Type");
+				switch (Type) {
+				case "1":
 					webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
+					break;
+				case "2":
+					if (!dfg.equals("無法解析，左右格式錯誤")) {
+						Invoice invoice = new Gson().fromJson(dfg, Invoice.class);
+						
+						String dfg2 = "發票字軌:"+invoice.getTrack()+"\n"
+										+",發票開立日期:"+invoice.getDate()+"\n"
+										+",隨機碼:"+invoice.getRandomcode()+"\n"
+										+",銷售額:"+invoice.getSales()+"\n"
+										+",總計額:"+invoice.getTotal()+"\n"
+										+",買方統一編號:"+invoice.getBuyerUnified()+"\n"
+										+",賣方統一編號:"+invoice.getSellerUnified()+"\n"				
+										+",加密驗證資訊:"+invoice.getEncryption()+"\n"	
+										+",營業人自行使用區:"+invoice.getArea()+"\n"	
+										+",完整品目筆數:"+invoice.getCount()+"\n"	
+										+",交易品目總筆數:"+invoice.getTotalnumber()+"\n"	
+										+",中文編碼參數:"+invoice.getCoding()+"\n";
+						String dfg3 = "";
+						for (int i = 0; i < invoice.getIteers().size(); i++) {
+							dfg3 =dfg3
+									+"品名:"+invoice.getIteers().get(i).getName()
+									+",數量:"+invoice.getIteers().get(i).getNumber()
+									+",單價:"+invoice.getIteers().get(i).getPrice();
+						}
+						webView.loadUrl("javascript:callFromActivity('" + dfg2+dfg3 + "')");
+					}
+					else
+					{
+						webView.loadUrl("javascript:callFromActivity('" + dfg + "')");
+					}
+					break;
 				}
+				
+				
+				
 				
 				//Bitmap bitmap = MyApplication.getInstance().bitmap;
 				//aq.id(R.id.imageView1).image(bitmap);
@@ -189,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
     @JavascriptInterface  
     public void openqr() {  
     	Log.i("測試", "測試");
-    	
+    	MyApplication.getInstance().Type = "2";
     	Intent intent = new Intent(MainActivity.this, MipcaActivityCapture.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivityForResult(intent, SCANNIN_GREQUEST_CODE);
