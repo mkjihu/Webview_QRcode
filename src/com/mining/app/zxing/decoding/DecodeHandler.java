@@ -45,6 +45,16 @@ import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.multi.qrcode.QRCodeMultiReader;
 import com.mining.app.zxing.camera.CameraManager;
 import com.mining.app.zxing.camera.PlanarYUVLuminanceSource;
+import com.yanzhenjie.zbar.Config;
+import com.yanzhenjie.zbar.Image;
+import com.yanzhenjie.zbar.ImageScanner;
+import com.yanzhenjie.zbar.Symbol;
+import com.yanzhenjie.zbar.SymbolSet;
+
+//-----
+
+
+//-----
 
 final class DecodeHandler extends Handler {
 
@@ -60,6 +70,10 @@ final class DecodeHandler extends Handler {
 	private Hashtable<DecodeHintType, Object> hints;
 	
 	private Hashtable<DecodeHintType, Object> hints2;
+	
+	
+	//
+	private ImageScanner scanner;//声明扫描器 	
 	
 	
 	DecodeHandler(MipcaActivityCapture activity,
@@ -86,7 +100,7 @@ final class DecodeHandler extends Handler {
 	    }
 	    hints2.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
 	    // 设置继续的字符编码格式为UTF8
-	    hints2.put(DecodeHintType.CHARACTER_SET, "UTF-8");
+	    //hints2.put(DecodeHintType.CHARACTER_SET, "UTF-8");
 		
 	}
 
@@ -139,10 +153,12 @@ final class DecodeHandler extends Handler {
 		
 		PlanarYUVLuminanceSource source = CameraManager.get().buildLuminanceSource(rotatedData, width, height);
 		//BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));//--傳入亮度来源解碼
-		
+	
+
 		switch (MyApplication.getInstance().Type) {
 		case "1"://原生解碼
 			decoding1(source);
+			//suru(rotatedData);//目前問題未修正
 			break;
 		case "2"://自製解碼
 			decoding2(source, rawResult);
@@ -152,10 +168,6 @@ final class DecodeHandler extends Handler {
 	}
 
 	
-	
-	
-	
-	
 	//===================2017/11/20===================================================================
 	
 	public void decoding1(PlanarYUVLuminanceSource source) {
@@ -163,8 +175,19 @@ final class DecodeHandler extends Handler {
 		
 		Result[] rawResult = null;
 		
+		// 设置继续的字符编码格式为UTF8
+		//hints.put(DecodeHintType.CHARACTER_SET, "BIG5");
+		//hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
+		
 		try {
 			rawResult = qrCodeMultiReader.decodeMultiple(bitmap, hints);
+			//判斷
+			if (rawResult != null && rawResult.length>1){
+				if (fii3(rawResult)){
+					hints.put(DecodeHintType.CHARACTER_SET, "BIG5");
+					rawResult = qrCodeMultiReader.decodeMultiple(bitmap,hints);//.decodeWithState(bitmap);
+				}
+			}
 		} catch (ReaderException re) {
 			// continue
 		} finally {
@@ -183,8 +206,28 @@ final class DecodeHandler extends Handler {
 			Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
 			message.sendToTarget();
 		}
+		
 	}
 	
+	
+	///---判斷是否重解
+	public boolean fii3(Result[] rawResult)
+	{
+		String a = rawResult[0].getText().substring(0, 2);
+		String[] starl;
+		String coding;
+		if (a.endsWith("**")) {
+			//解rawResult[0]
+			starl = rawResult[1].getText().split(":");//拆解分析
+			coding  = starl[4];
+
+		}else{
+			//解rawResult[1]
+			starl = rawResult[0].getText().split(":");//拆解分析
+			coding  = starl[4];
+		}
+		return coding.equals("0") ?  true : false;  //判斷解碼方式 0 就用BIG5重來
+	}
 	
 	//自定
 	public void decoding2(PlanarYUVLuminanceSource source,Result rawResult) {
@@ -309,4 +352,52 @@ final class DecodeHandler extends Handler {
 		*/
       
 	}
+	
+	///===============Zbar===================2017/11/29========================
+	
+		private void suru(byte[] data) {
+			
+			scanner = new ImageScanner();//创建扫描器
+		    scanner.setConfig(0, Config.X_DENSITY, 3);
+		    scanner.setConfig(0, Config.Y_DENSITY, 3);
+		    //scanner.setConfig(0, Config.X_DENSITY, 2);//行扫描间隔
+		    //scanner.setConfig(0, Config.Y_DENSITY, 2);//列扫描间隔
+		      scanner.setConfig(0, Config.ENABLE, 0); //停用所有符号
+		    scanner.setConfig(Symbol.QRCODE, Config.ENABLE, 1); //只有QRCODE被启用
+		    scanner.setConfig(0, 512, 1);//是否开启同一幅图一次解多个条码,0表示只解一个，1为多个
+		    
+			/**
+			 *创建解码图像,width, height 分别为摄像头预览分辨率的宽度和高度,一般来说,分辨率越高图
+			 *像越清晰,但解码速度越慢。由于解码算法需要处理的是原始灰度数据,而预览图像的默认格式为 
+			 *YCbCr_420_SP,需要转换格式才能处理, 参数"Y800"表示待转换的图像格式。
+			 */
+		    Camera.Size size = MyApplication.getInstance().previewSize;
+
+		    Image barcode = new Image(size.width, size.height, "Y800");//);
+			
+			 /**
+			    *设置扫描区域范围,为了较好的识读较长的一维码,扫描框的宽度不应过小,由于预览的图像为横屏, 
+			    *注意扫描区域需要转换为竖屏对应的位置 
+			    */
+			 //Rect cropRect = finder_view.getScanImageRect(size.height, size.width);
+			 //finder_view为DEMO中自定义的扫码区域控件。
+			 //source.setCrop(cropRect.top,cropRect.left,cropRect.height(),cropRect.width());
+
+			 /*填充图像数据,data 为摄像头原始数据*/
+		     barcode.setData(data); 
+
+			 /*解码,返回值为 0 代表失败,>0 表示成功*/
+			 int result = scanner.scanImage(barcode); 
+			 if (result != 0) {
+				 SymbolSet syms = scanner.getResults();
+			      Log.i("數量",syms.size()+"");
+			      for (Symbol sym : syms) {
+			        //scanText.setText("barcode result " + sym.getData());
+			        Log.i("幹",sym.getData());
+			      }
+			 }
+			 Message message = Message.obtain(activity.getHandler(),R.id.decode_failed);
+				message.sendToTarget();
+		}
+		
 }

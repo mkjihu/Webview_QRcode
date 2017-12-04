@@ -291,7 +291,6 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 			playBeepSoundAndVibrate();
 			
 			String aandb;
-			
 			String a = Ra.substring(0, 2);
 			String b = Rb.substring(0, 2);
 			
@@ -301,15 +300,18 @@ public class MipcaActivityCapture extends Activity implements Callback , View.On
 					aandb = Rb+Ra.substring(2, Ra.length());
 					resultString = new Gson().toJson(invoice(aandb));
 					Log.i("結果", resultString);
-				} else if (b.endsWith("**")) {
+				}
+				if (b.endsWith("**")) {
 					aandb = Ra+Rb.substring(2, Rb.length());
 					resultString = new Gson().toJson(invoice(aandb));
 					Log.i("結果", resultString);
-				} else if((a.endsWith("**")&&b.endsWith("**"))||(!a.endsWith("**")&&!b.endsWith("**"))){
-					resultString = "無法解析2，左右格式錯誤";
+				} 
+				
+				if((a.endsWith("**")&&b.endsWith("**"))||(!a.endsWith("**")&&!b.endsWith("**"))){
+					resultString = "無法解析，左右格式錯誤";
 				}
 			} catch (Exception e) {
-				resultString = "無法解析1，左右格式錯誤";
+				resultString = "無法解析，左右格式錯誤";
 			}
 			
 		}
